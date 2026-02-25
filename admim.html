@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Admin</title>
+</head>
+<body>
+
+<h2>Painel Admin</h2>
+<div id="listaPedidos"></div>
+
+<script type="module">
+
+import { db } from "./firebase.js";
+import { collection, getDocs, updateDoc, doc } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const lista = document.getElementById("listaPedidos");
+
+async function carregarPedidos() {
+
+    const querySnapshot = await getDocs(collection(db, "pedidos"));
+
+    lista.innerHTML = "";
+
+    querySnapshot.forEach((pedido) => {
+
+        const dados = pedido.data();
+
+        const div = document.createElement("div");
+        div.innerHTML = `
+            <p><b>${dados.nome}</b> - ${dados.item} - R$ ${dados.valor}</p>
+            <p>Pagamento: ${dados.pagamento}</p>
+            <p>Status: ${dados.status}</p>
+            <button onclick="aprovar('${pedido.id}')">Aprovar</button>
+            <hr>
+        `;
+
+        lista.appendChild(div);
+
+    });
+
+}
+
+window.aprovar = async function(id) {
+
+    const pedidoRef = doc(db, "pedidos", id);
+
+    await updateDoc(pedidoRef, {
+        status: "aprovado"
+    });
+
+    carregarPedidos();
+};
+
+carregarPedidos();
+
+</script>
+
+</body>
+</html>
