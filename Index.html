@@ -1,49 +1,307 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Cardápio</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lancheria NomeAqui</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body{
+  background:#fff8f0;
+  color:#333;
+}
+
+/* HEADER */
+header{
+  background:linear-gradient(135deg,#ff6600,#ff9900);
+  color:white;
+  text-align:center;
+  padding:30px 15px;
+  animation:fadeDown 0.8s ease;
+}
+
+@keyframes fadeDown{
+  from{opacity:0; transform:translateY(-20px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+.container{
+  max-width:1100px;
+  margin:auto;
+  padding:20px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:20px;
+}
+
+.card{
+  background:white;
+  border-radius:15px;
+  overflow:hidden;
+  box-shadow:0 4px 15px rgba(0,0,0,0.1);
+  transition:0.3s;
+  animation:fadeUp 0.8s ease;
+}
+
+@keyframes fadeUp{
+  from{opacity:0; transform:translateY(20px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+.card:hover{
+  transform:translateY(-5px) scale(1.02);
+}
+
+.card img{
+  width:100%;
+  height:140px;
+  object-fit:cover;
+}
+
+.card-content{
+  padding:15px;
+}
+
+.price{
+  color:#ff6600;
+  font-weight:bold;
+  margin:5px 0;
+}
+
+button{
+  background:#ff6600;
+  border:none;
+  padding:10px;
+  border-radius:8px;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+button:hover{
+  background:#e65c00;
+  transform:scale(1.05);
+}
+
+/* CARRINHO */
+.carrinho{
+  margin-top:40px;
+  background:white;
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.1);
+}
+
+.total{
+  font-size:18px;
+  font-weight:bold;
+  margin:10px 0;
+}
+
+/* MODAL */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  animation:fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+.modal-content{
+  background:white;
+  padding:25px;
+  border-radius:15px;
+  width:90%;
+  max-width:400px;
+  animation:fadeUp 0.3s ease;
+}
+
+.modal-content h3{
+  margin-bottom:15px;
+}
+
+input, select{
+  width:100%;
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:8px;
+  border:1px solid #ff6600;
+}
+
+.hidden{
+  display:none;
+}
+
+@media(min-width:768px){
+  .layout{
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:30px;
+  }
+}
+
+</style>
 </head>
+
 <body>
 
-<h2>Pedido</h2>
+<header>
+  <h1>🔥 Lancheria NomeAqui 🔥</h1>
+  <p>O melhor Xis da cidade</p>
+</header>
 
-<input type="text" id="nome" placeholder="Seu nome">
-<input type="text" id="item" placeholder="Item">
-<input type="number" id="valor" placeholder="Valor">
+<div class="container layout">
 
-<select id="pagamento">
-  <option value="pix">Pix</option>
-  <option value="dinheiro">Dinheiro</option>
-  <option value="cartao">Cartão</option>
-</select>
+  <div>
+    <h2>🍔 Hambúrgueres</h2>
+    <div class="grid">
+      <div class="card">
+        <img src="imagens/xburguer.jpg">
+        <div class="card-content">
+          <h3>X-Burguer</h3>
+          <div class="price">R$18</div>
+          <button onclick="addItem('X-Burguer',18)">Adicionar</button>
+        </div>
+      </div>
 
-<button id="enviar">Enviar Pedido</button>
+      <div class="card">
+        <img src="imagens/xsalada.jpg">
+        <div class="card-content">
+          <h3>X-Salada</h3>
+          <div class="price">R$20</div>
+          <button onclick="addItem('X-Salada',20)">Adicionar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<script type="module">
+  <div class="carrinho">
+    <h2>🛒 Carrinho</h2>
+    <div id="lista"></div>
+    <div class="total">Total: R$ <span id="total">0</span></div>
+    <button onclick="abrirModal()">Finalizar Pedido</button>
+  </div>
 
-import { db } from "./firebase.js";
-import { collection, addDoc } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+</div>
 
-document.getElementById("enviar").addEventListener("click", async () => {
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h3>Finalizar Pedido</h3>
 
-    const nome = document.getElementById("nome").value;
-    const item = document.getElementById("item").value;
-    const valor = Number(document.getElementById("valor").value);
-    const pagamento = document.getElementById("pagamento").value;
+    <input type="text" id="nome" placeholder="Seu nome">
 
-    await addDoc(collection(db, "pedidos"), {
-        nome,
-        item,
-        valor,
-        pagamento,
-        status: "pendente",
-        data: new Date()
-    });
+    <select id="tipo" onchange="verificarEntrega()">
+      <option value="Retirada">Retirada</option>
+      <option value="Local">Comer no local</option>
+      <option value="Entrega">Entrega</option>
+    </select>
 
-    alert("Pedido enviado!");
-});
+    <div id="endereco" class="hidden">
+      <input type="text" id="rua" placeholder="Rua">
+      <input type="text" id="numero" placeholder="Número">
+      <input type="text" id="bairro" placeholder="Bairro">
+      <p style="font-size:12px;color:#555;">
+        ⚠ Taxa de entrega será informada no WhatsApp.
+      </p>
+    </div>
+
+    <button onclick="enviarPedido()">Enviar para WhatsApp</button>
+  </div>
+</div>
+
+<script>
+
+const NUMERO_WHATSAPP="5555996698757";
+let carrinho=[];
+
+function addItem(nome,preco){
+  carrinho.push({nome,preco});
+  atualizar();
+}
+
+function atualizar(){
+  let lista=document.getElementById("lista");
+  let total=0;
+  lista.innerHTML="";
+  carrinho.forEach(item=>{
+    total+=item.preco;
+    lista.innerHTML+=item.nome+" - R$"+item.preco+"<br>";
+  });
+  document.getElementById("total").innerText=total;
+}
+
+function abrirModal(){
+  if(carrinho.length===0){
+    alert("Carrinho vazio!");
+    return;
+  }
+  document.getElementById("modal").style.display="flex";
+}
+
+function verificarEntrega(){
+  let tipo=document.getElementById("tipo").value;
+  let endereco=document.getElementById("endereco");
+  endereco.classList.toggle("hidden", tipo!=="Entrega");
+}
+
+function enviarPedido(){
+  let nome=document.getElementById("nome").value;
+  let tipo=document.getElementById("tipo").value;
+
+  if(!nome){
+    alert("Digite seu nome");
+    return;
+  }
+
+  let mensagem="🍔 Pedido - Lancheria NomeAqui\n\n";
+  mensagem+="Cliente: "+nome+"\n";
+  mensagem+="Tipo: "+tipo+"\n\n";
+
+  if(tipo==="Entrega"){
+    let rua=document.getElementById("rua").value;
+    let numero=document.getElementById("numero").value;
+    let bairro=document.getElementById("bairro").value;
+
+    if(!rua||!numero||!bairro){
+      alert("Preencha o endereço completo.");
+      return;
+    }
+
+    mensagem+="Endereço:\n";
+    mensagem+="Rua: "+rua+"\nNúmero: "+numero+"\nBairro: "+bairro+"\n\n";
+    mensagem+="⚠ Taxa de entrega será informada no atendimento.\n\n";
+  }
+
+  let total=0;
+  carrinho.forEach(item=>{
+    mensagem+=item.nome+" - R$"+item.preco+"\n";
+    total+=item.preco;
+  });
+
+  mensagem+="\nTotal (sem taxa): R$"+total;
+
+  let url=`https://wa.me/${NUMERO_WHATSAPP}?text=${encodeURIComponent(mensagem)}`;
+  window.open(url,"_blank");
+}
 
 </script>
 
